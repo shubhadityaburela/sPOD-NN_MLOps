@@ -1,0 +1,41 @@
+[project]
+name = "spodnn"
+version = "0.1.0"
+description = "sPOD-NN: non-intrusive model order reduction for transport-dominated problems, as an MLOps product"
+readme = "README.md"
+requires-python = ">=3.12"
+# Direct runtime dependencies only. Exact versions live in uv.lock.
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "torch",
+    "pandas",
+    "matplotlib",
+    "numba",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[tool.uv]
+# Use only uv-installed Pythons, never a conda or Homebrew one found on PATH.
+python-preference = "only-managed"
+# Platforms we lock for: Apple-silicon Macs (development) and Linux (CI, Docker).
+environments = [
+    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "sys_platform == 'linux'",
+]
+
+# On Linux, take torch from the CPU-only index: the default PyPI wheel bundles
+# CUDA libraries (several GB) that CI and the Docker image never use.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
