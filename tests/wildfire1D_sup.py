@@ -445,7 +445,7 @@ def plot_sPODframes(q_test, q1_spod_frame, q2_spod_frame, q3_spod_frame, qtilde,
     fig, axs = plt.subplots(1, 4, num=3, sharey=True, figsize=(12, 5))
     bottom, top = 0.15, 0.9
     left, right = 0.1, 0.85
-    fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right, hspace=0.1, wspace=0)
+    fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right, hspace=0.1, wspace=0.2)
     # Reconstruction
     im = axs[0].pcolormesh(Xgrid, Tgrid, qtilde, vmin=qmin, vmax=qmax, cmap=cmap)
     # axs[0].axis('off')

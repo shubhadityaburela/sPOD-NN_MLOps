@@ -374,7 +374,7 @@ class synthetic_sup:
             axs[0, kw].set_title(r'${\mu}_{' + str(k) + '}$')
             axs[0, kw].set_yticks([0, Nx // 2, Nx])
             axs[0, kw].set_xticks([0, Nt // 2, Nt])
-            axs[0, kw].set_yticklabels([r"$-L/2$", 0, r"$L/2$"])
+            axs[0, kw].set_yticklabels([r"$-l/2$", 0, r"$l/2$"])
             axs[1, kw].pcolormesh(q1_train[:, Nt * k:Nt * (k + 1)], vmin=qmin, vmax=qmax, cmap=cm)
             im = axs[2, kw].pcolormesh(q2_train[:, Nt * k:Nt * (k + 1)], vmin=qmin, vmax=qmax, cmap=cm)
 
@@ -401,21 +401,21 @@ class synthetic_sup:
         # 1. frame
         k_frame = 0
         im = axs[0].pcolormesh(q1_spod_frame[:, :self.Nt], cmap=cm, vmin=qmin, vmax=qmax)
-        axs[0].set_title(r"$Q^" + str(k_frame + 1) + "$")
+        axs[0].set_title(r"$\mathbf{Q}^" + str(k_frame + 1) + "$")
         axs[0].set_yticks([0, Nx // 2, Nx])
         axs[0].set_xticks([0, Nt // 2, Nt])
-        axs[0].set_yticklabels([r"$-L/2$", 0, r"$L/2$"])
+        axs[0].set_yticklabels([r"$-l/2$", 0, r"$l/2$"])
         axs[0].set_xticklabels(["", r"$T/2$", r"$T$"])
         # 2. frame
         k_frame = 1
         im = axs[1].pcolormesh(q2_spod_frame[:, :self.Nt], cmap=cm, vmin=qmin, vmax=qmax)
-        axs[1].set_title(r"$Q^" + str(k_frame + 1) + "$")
+        axs[1].set_title(r"$\mathbf{Q}^" + str(k_frame + 1) + "$")
         axs[1].set_yticks([0, Nx // 2, Nx])
         axs[1].set_xticks([0, Nt // 2, Nt])
         axs[1].set_xticklabels(["", r"$T/2$", r"$T$"])
         # Reconstruction
         im = axs[2].pcolormesh(qtilde[:, :self.Nt], cmap=cm, vmin=qmin, vmax=qmax)
-        axs[2].set_title(r"$Q$")
+        axs[2].set_title(r"$\mathbf{Q}$")
         axs[2].set_yticks([0, Nx // 2, Nx])
         axs[2].set_xticks([0, Nt // 2, Nt])
         axs[2].set_xticklabels(["", r"$T/2$", r"$T$"])
@@ -511,14 +511,14 @@ class synthetic_sup:
         fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right, hspace=0.15, wspace=0)
         # Original
         im = axs[0].pcolormesh(self.q_test, cmap=cm, vmin=qmin, vmax=qmax)
-        axs[0].set_title(r"$Q$")
+        axs[0].set_title(r"$\mathbf{Q}$")
         axs[0].set_yticks([0, Nx // 2, Nx])
         axs[0].set_xticks([0, Nt // 2, Nt])
-        axs[0].set_yticklabels([r"$-L/2$", 0, r"$L/2$"])
+        axs[0].set_yticklabels([r"$-l/2$", 0, r"$l/2$"])
         axs[0].set_xticklabels(["", r"$T/2$", r"$T$"])
         # Interpolated
         axs[1].pcolormesh(q_interp, cmap=cm, vmin=qmin, vmax=qmax)
-        axs[1].set_title(r"$Q^" + "{\mathrm{sPOD-I}}$")
+        axs[1].set_title(r"$\mathbf{Q}^" + "{\mathrm{sPOD-I}}$")
         axs[1].set_yticks([0, Nx // 2, Nx])
         axs[1].set_xticks([0, Nt // 2, Nt])
         axs[1].set_xticklabels(["", r"$T/2$", r"$T$"])
@@ -526,13 +526,13 @@ class synthetic_sup:
         axs[2].pcolormesh(q_sPOD_recon, cmap=cm, vmin=qmin, vmax=qmax)
         axs[2].set_yticks([0, Nx // 2, Nx])
         axs[2].set_xticks([0, Nt // 2, Nt])
-        axs[2].set_title(r"$Q^" + "{\mathrm{sPOD-NN}}$")
+        axs[2].set_title(r"$\mathbf{Q}^" + "{\mathrm{sPOD-NN}}$")
         axs[2].set_xticklabels(["", r"$T/2$", r"$T$"])
         # POD NN predicted
         axs[3].pcolormesh(q_POD_recon, cmap=cm, vmin=qmin, vmax=qmax)
         axs[3].set_yticks([0, Nx // 2, Nx])
         axs[3].set_xticks([0, Nt // 2, Nt])
-        axs[3].set_title(r"$Q^" + "{\mathrm{POD-NN}}$")
+        axs[3].set_title(r"$\mathbf{Q}^" + "{\mathrm{POD-NN}}$")
         axs[3].set_xticklabels(["", r"$T/2$", r"$T$"])
 
         cbar_ax = fig.add_axes([0.85, bottom, 0.01, top - bottom])
