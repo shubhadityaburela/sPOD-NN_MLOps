@@ -28,6 +28,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
 PAPER = REPO / "paper"
@@ -40,6 +41,36 @@ def setup_paper_imports():
     sys.path[:0] = [str(PAPER), str(REPO / "sPOD" / "src" / "spod"), str(REPO / "DL-ROM" / "LIB")]
 
 
+def fingerprint(a):
+    """A few numbers that summarise an array, so an intermediate result can be
+    checked without storing the whole array."""
+    a = np.asarray(a, dtype=float)
+    return {
+        "shape": list(a.shape),
+        "norm": float(np.linalg.norm(a)),
+        "sum": float(a.sum()),
+        "abs_max": float(np.abs(a).max()),
+        "abs_mean": float(np.abs(a).mean()),
+    }
+
+
+def amplitude_fingerprint(ta):
+    """Sign-safe summary of a (modes x samples) amplitude matrix.
+
+    An SVD mode is only defined up to sign (u and -u are equally valid), so the
+    amplitudes are summarised by row norms, which don't depend on the sign. The
+    signs themselves are recorded separately as `orientation` (the sign of each
+    row's largest entry): the trained networks only fit the original orientation.
+    """
+    ta = np.asarray(ta, dtype=float)
+    largest = np.argmax(np.abs(ta), axis=1)
+    return {
+        "shape": list(ta.shape),
+        "row_norms": [float(v) for v in np.linalg.norm(ta, axis=1)],
+        "orientation": [int(np.sign(ta[i, j])) for i, j in enumerate(largest)],
+    }
+
+
 def run_synthetic():
     """Run the synthetic pipeline of paper/synthetic.ipynb and return its results.
 
@@ -48,15 +79,62 @@ def run_synthetic():
         "test_model_rel_err_POD":  float, the rel_err returned by test_model for POD-NN
         "errors":     the list of 3 arrays returned by OnlinePredictionAnalysis
         "errors_inf": the list of 3 arrays returned by OnlinePredictionAnalysis
+        "intermediates": fingerprints of intermediate results, grouped by pipeline stage
     """
 
+    import synthetic_sup as sup_module
     from synthetic_sup import synthetic_sup
     from DFNN import scale_params, test_model
-    import numpy as np
+
+    # fingerprint: spy on the sPOD-I helpers. synthetic_sup did `from Helper import *`,
+    # so it looks these names up in its own namespace at call time; replacing them there
+    # with a wrapper records their outputs without changing what they compute.
+    spied = {}
+
+    def spy_on(name):
+        original = getattr(sup_module, name)
+
+        def wrapper(*args, **kwargs):
+            out = original(*args, **kwargs)
+            spied[name] = out
+            return out
+
+        setattr(sup_module, name, wrapper)
+
+    spy_on("my_delta_interpolate")
+    spy_on("my_interpolated_state")
 
     # Run the sPOD offline phase
-    df = synthetic_sup(training_samples=[0.1, 0.15, 0.2, 0.25, 0.3], testing_sample=[0.23], 
+    df = synthetic_sup(training_samples=[0.1, 0.15, 0.2, 0.25, 0.3], testing_sample=[0.23],
                    nmodes=8, spod_iter=300, plot_offline_data=False)
+
+    # fingerprint: data generation and decomposition, before anything else touches df
+    D = df.D
+    intermediates = {
+        "data": {
+            "q_train": fingerprint(df.q_train),
+            "q_test": fingerprint(df.q_test),
+            "q1_test": fingerprint(df.q1_test),
+            "q2_test": fingerprint(df.q2_test),
+            "shifts_train_frame1": fingerprint(df.shifts_train[0]),
+            "shifts_train_frame2": fingerprint(df.shifts_train[1]),
+            "shifts_test_frame1": fingerprint(df.shifts_test[0]),
+            "shifts_test_frame2": fingerprint(df.shifts_test[1]),
+            "params_train": fingerprint(df.params_train),
+            "params_test": fingerprint(df.params_test),  # copied now: scale_params scales it in place later
+        },
+        "decomposition": {
+            "pod_reconstruction": fingerprint(df.U_POD_TRAIN @ df.TA_POD_TRAIN),
+            "pod_amplitudes_train": amplitude_fingerprint(df.TA_POD_TRAIN),
+            "pod_amplitudes_test": amplitude_fingerprint(df.TA_POD_TEST),
+        },
+    }
+    stage = intermediates["decomposition"]
+    for k in range(df.NumFrames):
+        amplitudes = df.TA_TRAIN[k * D:(k + 1) * D]
+        stage["frame%d_reconstruction" % (k + 1)] = fingerprint(df.U_list[k] @ amplitudes)
+        stage["frame%d_amplitudes_train" % (k + 1)] = amplitude_fingerprint(amplitudes)
+        stage["frame%d_amplitudes_test" % (k + 1)] = amplitude_fingerprint(df.TA_TEST[k * D:(k + 1) * D])
 
 
     # We collect the time amplitudes, shifts and the parameters for the training as well as the testing data.
@@ -135,13 +213,31 @@ def run_synthetic():
     shifts_sPOD_pred = results_predicted_sPOD[-2:, :]
     TA_POD_pred = results_predicted_POD
 
+    # fingerprint: network inputs (after the in-place scaling) and raw network outputs
+    intermediates["network"] = {
+        "params_test_scaled": fingerprint(PARAMS_TEST),
+        "prediction_sPOD": fingerprint(results_predicted_sPOD),
+        "prediction_POD": fingerprint(results_predicted_POD),
+    }
+
     errors, errors_inf = df.OnlinePredictionAnalysis(TA_sPOD_pred, shifts_sPOD_pred, TA_POD_pred, plot_online=False, test_type=test)
 
+    # fingerprint: sPOD-I outputs captured by the spies during OnlinePredictionAnalysis
+    shifts_interp = spied["my_delta_interpolate"]
+    q_interp, amplitudes_interp = spied["my_interpolated_state"]
+    intermediates["interpolation"] = {
+        "shifts_frame1": fingerprint(shifts_interp[0]),
+        "shifts_frame2": fingerprint(shifts_interp[1]),
+        "state": fingerprint(q_interp),
+        "amplitudes_frame1": amplitude_fingerprint(amplitudes_interp[0]),
+        "amplitudes_frame2": amplitude_fingerprint(amplitudes_interp[1]),
+    }
 
     return { "test_model_rel_err_sPOD": rel_err_sPOD,
             "test_model_rel_err_POD":  rel_err_POD,
             "errors":     errors,
-            "errors_inf": errors_inf}
+            "errors_inf": errors_inf,
+            "intermediates": intermediates}
 
 
 # Lines like "Relative ... (sPOD-NN) is 0.0753..." or "... error =  3.2648e-05"
@@ -207,6 +303,7 @@ def main():
         "runtime_seconds": round(runtime, 1),
         "values": values,
         "curves": curves,
+        "intermediates": result["intermediates"],
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(golden, indent=2) + "\n")
