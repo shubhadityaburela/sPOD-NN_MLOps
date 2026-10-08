@@ -12,6 +12,12 @@ supported-markers = [
     "sys_platform == 'linux'",
 ]
 
+[manifest]
+members = [
+    "spod-vendored",
+    "spodnn",
+]
+
 [[package]]
 name = "cloudpickle"
 version = "3.1.2"
@@ -790,6 +796,33 @@ wheels = [
 ]
 
 [[package]]
+name = "spod-vendored"
+version = "0.1.0"
+source = { editable = "sPOD" }
+dependencies = [
+    { name = "matplotlib", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "numba", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "numpy", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pandas", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "scikit-learn", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "scipy", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "torch", version = "2.14.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
+    { name = "torch", version = "2.14.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'linux'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "matplotlib" },
+    { name = "numba" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "torch", marker = "sys_platform != 'linux'" },
+    { name = "torch", marker = "sys_platform == 'linux'", index = "https://download.pytorch.org/whl/cpu" },
+]
+
+[[package]]
 name = "spodnn"
 version = "0.1.0"
 source = { editable = "." }
@@ -800,6 +833,7 @@ dependencies = [
     { name = "pandas", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "scikit-learn", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "scipy", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "spod-vendored", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "torch", version = "2.14.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "torch", version = "2.14.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'linux'" },
 ]
@@ -818,6 +852,7 @@ requires-dist = [
     { name = "pandas" },
     { name = "scikit-learn" },
     { name = "scipy" },
+    { name = "spod-vendored", editable = "sPOD" },
     { name = "torch", marker = "sys_platform != 'linux'" },
     { name = "torch", marker = "sys_platform == 'linux'", index = "https://download.pytorch.org/whl/cpu" },
 ]

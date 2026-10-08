@@ -1,0 +1,23 @@
+[project]
+name = "spod-vendored"
+version = "0.1.0"
+description = "vendored from Philipp137/sPOD @ 410b28c, local fix in shifted_rPCA"
+readme = "README.md"
+requires-python = ">=3.12"
+# Direct runtime dependencies only. Exact versions live in uv.lock.
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "torch",
+    "pandas",
+    "matplotlib",
+    "numba",
+]
+
+[build-system]
+requires = ["uv_build>=0.10,<0.11"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "spod"        # import name differs from the distribution name
