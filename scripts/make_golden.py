@@ -37,7 +37,7 @@ def setup_paper_imports():
     """Make the paper code importable the same way the notebooks do."""
     os.environ["MPLBACKEND"] = "Agg"  # draw nothing on screen; no display needed
     os.chdir(PAPER)  # the paper code uses paths relative to paper/
-    sys.path[:0] = [str(PAPER), str(REPO / "sPOD" / "lib"), str(REPO / "DL-ROM" / "LIB")]
+    sys.path[:0] = [str(PAPER), str(REPO / "sPOD" / "src" / "spod"), str(REPO / "DL-ROM" / "LIB")]
 
 
 def run_synthetic():
