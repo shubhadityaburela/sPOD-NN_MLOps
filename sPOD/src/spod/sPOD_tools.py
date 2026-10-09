@@ -84,7 +84,7 @@ class frame:
         Value Decomposition
         """
         if use_rSVD == True:
-            u, s, vt = randomized_svd(field, n_components=r)
+            u, s, vt = randomized_svd(field, n_components=r, random_state=0) #  random_state=0 is for reproducibility
         else:
             [U, S, VT] = svd(field, full_matrices=False)
             s = S[:r]
@@ -309,7 +309,7 @@ def SVT(X, mu, nmodes_max = None, use_rSVD = False):
     """
     if nmodes_max:
         if use_rSVD:
-            u, s, vt = randomized_svd(X, n_components=nmodes_max)
+            u, s, vt = randomized_svd(X, n_components=nmodes_max, random_state=0) #  random_state=0 is for reproducibility
         else:
             u, s, vt = svd(X, full_matrices=False)
             s = s[:nmodes_max]
@@ -404,7 +404,7 @@ def shifted_POD(snapshot_matrix, transforms, nmodes, eps, Niter=1, use_rSVD = Fa
     # error of svd:
     r_ = np.sum(nmodes)
     if use_rSVD == True:
-        u, s, vt = randomized_svd(q, n_components=r_)
+        u, s, vt = randomized_svd(q, n_components=r_, random_state=0)
     else:
         [U, S, VT] = svd(q, full_matrices=False)
         s = S[:r_]

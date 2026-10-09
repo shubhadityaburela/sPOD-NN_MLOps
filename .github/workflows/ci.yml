@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:                          # every push, any branch
+  pull_request:                  # every pull request
+  workflow_dispatch:             # adds a "Run workflow" button on GitHub
+
+permissions:
+  contents: read                 # least privilege: CI may read the repo, nothing more
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true       # a newer push to the same branch cancels the outdated run
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+
+        with:
+          enable-cache: true     # reuse downloaded packages between runs
+      - run: uv sync --locked
+      - run: uv run pre-commit run --all-files --show-diff-on-failure
+
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run pytest -v

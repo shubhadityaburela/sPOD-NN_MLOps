@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
-from farge_colormaps import farge_colormap_multi
-from IPython.display import HTML
-
+from .farge_colormaps import farge_colormap_multi
+# from IPython.display import HTML
 fc = farge_colormap_multi( etalement_du_zero=0.2, limite_faible_fort=0.5)
 
 from matplotlib import rc
