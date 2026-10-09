@@ -3,12 +3,12 @@
 import json
 from pathlib import Path
 import pytest
+import paper
+from spodnn.decomposition import pod, spod
 from spodnn.synthetic import generate, Grid
 
 GOLDEN_DIR = Path(__file__).parent / "golden"
 
-TRAIN_MU = [0.1, 0.15, 0.2, 0.25, 0.3]
-TEST_MU = [0.23]
 
 grid = Grid()  # create a grid instance for the tests
 
@@ -21,9 +21,21 @@ def golden():
 
 @pytest.fixture(scope="session")
 def train_set():
-    return generate(TRAIN_MU, grid, n_terms=8)        # built once for all tests
+    return generate(paper.TRAIN_MU, grid, n_terms=8)        # built once for all tests
 
 
 @pytest.fixture(scope="session")
 def test_set():
-    return generate(TEST_MU, grid, n_terms=8)     # built once for all tests
+    return generate(paper.TEST_MU, grid, n_terms=8)     # built once for all tests
+
+
+@pytest.fixture(scope="session")
+def pod_result(train_set, test_set):
+    return pod(train_set.q, test_set.q, n_modes=paper.POD_MODES)
+
+
+@pytest.fixture(scope="session")
+def spod_result(train_set, test_set):
+    """sPOD at the paper's configuration (~1 minute); shared by every test that needs it."""
+    return spod(train_set.q, test_set.frames, train_set.transforms,
+                n_modes=paper.SPOD_MODES, n_iter=paper.SPOD_ITER)

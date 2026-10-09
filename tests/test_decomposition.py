@@ -12,26 +12,13 @@ from numpy.testing import assert_allclose
 from fingerprints import assert_matches_amplitudes, assert_matches_fingerprint
 from spodnn.decomposition import align_signs, orientation, pod, spod
 
-# The paper's configuration: the golden values exist only for these inputs.
-PAPER_SPOD_MODES = 8  # modes kept per sPOD frame
-PAPER_POD_MODES = 18  # 2 frames x 8 modes + 2 shifts: as many outputs as sPOD-NN
-PAPER_SPOD_ITER = 300
-
 # Tolerances from evidence: a deterministic LAPACK SVD reproduces the reference to
 # ~1e-14; seeded sPOD to ~5e-13 (with margin for other platforms' BLAS).
 RTOL_POD = 1e-12
 RTOL_SPOD = 1e-10
 
 
-@pytest.fixture(scope="module")
-def pod_result(train_set, test_set):
-    return pod(train_set.q, test_set.q, n_modes=PAPER_POD_MODES)
-
-
-@pytest.fixture(scope="module")
-def spod_result(train_set, test_set):
-    return spod(train_set.q, test_set.frames, train_set.transforms,
-                n_modes=PAPER_SPOD_MODES, n_iter=PAPER_SPOD_ITER)
+# pod_result and spod_result (the paper's configuration) are fixtures in conftest.py.
 
 
 @pytest.fixture(scope="module")
