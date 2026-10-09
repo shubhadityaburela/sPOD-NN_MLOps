@@ -48,3 +48,6 @@ explicit = true
 
 [tool.uv.workspace]
 members = ["sPOD"]
+
+[tool.pytest.ini_options]
+markers = ["slow: takes minutes (runs sPOD); skip with -m 'not slow'"]

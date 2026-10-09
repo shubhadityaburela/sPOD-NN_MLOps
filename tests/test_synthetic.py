@@ -1,27 +1,8 @@
 """Unit tests for spodnn.synthetic against the reference data fingerprints."""
 
-import pytest
-
-from spodnn.synthetic import generate, Grid
 from fingerprints import assert_matches_fingerprint
 
-
-TRAIN_MU = [0.1, 0.15, 0.2, 0.25, 0.3]
-TEST_MU = [0.23]
 RTOL = 1e-12
-
-grid = Grid()  # create a grid instance for the tests
-
-
-@pytest.fixture(scope="module")
-def train_set():
-    return generate(TRAIN_MU, grid, n_terms=8)        # built once for all tests in this file
-
-
-@pytest.fixture(scope="module")
-def test_set():
-    return generate(TEST_MU, grid, n_terms=8)     # built once for all tests in this file
-
 
 def test_q_train_matches_reference(train_set, golden):
     assert_matches_fingerprint(train_set.q, golden["intermediates"]["data"]["q_train"], RTOL, "q_train")

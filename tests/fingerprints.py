@@ -19,4 +19,24 @@ def assert_matches_fingerprint(array, fp, rtol, name=""):
     assert_allclose(np.max(np.abs(a)), fp["abs_max"], rtol=rtol, atol=1e-9 * fp["norm"], err_msg=f"{name}: abs_max")
     assert_allclose(np.mean(np.abs(a)), fp["abs_mean"], rtol=rtol, atol=1e-9 * fp["norm"], err_msg=f"{name}: abs_mean")
 
+
+def orientation(amplitudes):
+    """Sign of each row's largest-magnitude entry, as recorded by the golden harness."""
+    a = np.asarray(amplitudes, dtype=float)
+    largest = np.argmax(np.abs(a), axis=1)
+    return [int(np.sign(a[i, j])) for i, j in enumerate(largest)]
+
+
+def assert_matches_amplitudes(amplitudes, ref, rtol, name=""):
+    """Assert that a (modes x samples) amplitude matrix matches its sign-safe fingerprint.
+
+    Row norms must agree to `rtol`; the orientation (sign of each mode) must match
+    exactly, because the trained networks only fit the original signs.
+    """
+    a = np.asarray(amplitudes, dtype=float)
+    assert list(a.shape) == ref["shape"], f"{name}: shape {a.shape} != {ref['shape']}"
+    assert_allclose(np.linalg.norm(a, axis=1), ref["row_norms"], rtol=rtol, err_msg=f"{name}: row norms")
+    signs = orientation(a)
+    assert signs == ref["orientation"], f"{name}: mode signs flipped: {signs} != {ref['orientation']}"
+
     
