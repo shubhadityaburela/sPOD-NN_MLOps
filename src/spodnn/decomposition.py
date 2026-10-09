@@ -15,6 +15,7 @@ a network trained on another basis (the paper's POD-NN), use align_signs().
 """
 
 from spod.sPOD_tools import give_interpolation_error, shifted_rPCA
+from spod.transforms import transforms
 from dataclasses import dataclass, replace
 import numpy as np
 
@@ -92,7 +93,7 @@ def align_signs(result: PODResult, reference_orientation) -> PODResult:
     )
 
 
-def spod(q: np.ndarray, q_test: list, transforms: list, n_modes: int, n_iter: int, mu_factor: float = 0.005, lamda_factor: float = 10.0) -> sPODResult:
+def spod(q: np.ndarray, q_test: list, trafos: list, n_modes: int, n_iter: int, mu_factor: float = 0.005, lamda_factor: float = 10.0) -> sPODResult:
     """Shifted POD of q with spod.shifted_rPCA, truncated to n_modes per frame.
 
     The penalty parameters follow the paper: mu0 = N M / (4 sum|q|) * mu_factor
@@ -104,7 +105,7 @@ def spod(q: np.ndarray, q_test: list, transforms: list, n_modes: int, n_iter: in
     Args:
         q: Training snapshots, shape (Nx, n_snapshots).
         q_test: Unshifted test frames [q1_test, q2_test] (SyntheticData.frames).
-        transforms: One spod transform per frame (SyntheticData.transforms).
+        trafos: One spod transform per frame (SyntheticData.transforms).
         n_modes: Modes kept per frame (the paper uses 8).
         n_iter: shifted_rPCA iterations (the paper uses 300).
         mu_factor, lamda_factor: Case-specific penalty factors (synthetic: 0.005, 10).
@@ -116,14 +117,14 @@ def spod(q: np.ndarray, q_test: list, transforms: list, n_modes: int, n_iter: in
     """
     ##########################################
     # Calculate the transformation interpolation error
-    interp_err = give_interpolation_error(q, transforms[0])
+    interp_err = give_interpolation_error(q, trafos[0])
 
     # Calculate the time amplitudes
     qmat = q.copy()
     [N, M] = np.shape(qmat)
     mu0 = N * M / (4 * np.sum(np.abs(qmat))) * mu_factor
     lambd0 = 1 / np.sqrt(np.maximum(M, N)) * lamda_factor
-    ret = shifted_rPCA(q, transforms, nmodes_max=n_modes + 20, eps=1e-16, Niter=n_iter,
+    ret = shifted_rPCA(q, trafos, nmodes_max=n_modes + 20, eps=1e-16, Niter=n_iter,
                         use_rSVD=True, mu=mu0, lambd=lambd0)
     sPOD_frames, _, _ = ret.frames, ret.data_approx, ret.rel_err_hist
 
@@ -140,7 +141,7 @@ def spod(q: np.ndarray, q_test: list, transforms: list, n_modes: int, n_iter: in
         time_amplitude = np.diag(S) @ VT
         TA_list.append(time_amplitude)
         U_list.append(frame.modal_system["U"][:, :n_modes])
-        qtrunc += transforms[cnt].apply(U_list[cnt] @ TA_list[cnt])
+        qtrunc += trafos[cnt].apply(U_list[cnt] @ TA_list[cnt])
 
         TA_test_list.append(U_list[cnt].T @ q_test[cnt])
 
@@ -149,3 +150,18 @@ def spod(q: np.ndarray, q_test: list, transforms: list, n_modes: int, n_iter: in
     err_trunc = np.linalg.norm(q - qtrunc) / np.linalg.norm(q)
 
     return sPODResult(interpolation_error=interp_err, offline_error=err_trunc, modes=U_list, time_amplitudes=TA_list, reconstruction=qtrunc, time_amplitudes_test=TA_test_list)
+
+
+def reconstruct(modes: list, amplitudes: list, shifts: list, grid) -> np.ndarray:
+    """Rebuild the field from per-frame modes, amplitudes and shifts.
+
+    q = sum_k T_{shifts[k]} (modes[k] @ amplitudes[k]), the inverse of the sPOD.
+    Used for sPOD-NN (amplitudes and shifts from the network) and sPOD-I
+    (interpolated); shifts[k] has one value per snapshot (column).
+    """
+    q = 0
+    for U, a, s in zip(modes, amplitudes, shifts):
+        trafo = transforms([grid.Nx, 1, 1, a.shape[1]], [grid.L], shifts=np.ravel(s), dx=[grid.dx],
+                           use_scipy_transform=False, interp_order=5)
+        q = q + trafo.apply(U @ a)
+    return q
