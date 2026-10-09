@@ -1,0 +1,27 @@
+# Checks that run on every `git commit` (after `uv run pre-commit install`).
+exclude: ^(paper|sPOD|DL-ROM|WildlandFire_model)/     # vendored and reference code: never touched
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0                       # replaced by `pre-commit autoupdate` below
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict      # leftover <<<<<<< markers
+      - id: check-added-large-files   # prevents large files from being added to the repo
+        args: [--maxkb=1024]
+
+  - repo: local                       # ruff from the current environment (version pinned by uv.lock)
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]

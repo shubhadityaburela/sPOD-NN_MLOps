@@ -138,7 +138,7 @@ mlruns/
 *.data
 
 # Keep the contents inside the DNN_result folder tracked by git.
-# Since this directory is not ignored anywhere before this, we can safely do this step. 
+# Since this directory is not ignored anywhere before this, we can safely do this step.
 # This is done so that if the DNN_result folder is moved away to any other folder, it still gets tracked.
 !**/DNN_result/**/*.npy
 !**/DNN_result/**/*.pkl
