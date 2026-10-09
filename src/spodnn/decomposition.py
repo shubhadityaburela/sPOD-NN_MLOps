@@ -14,32 +14,33 @@ long as a trained network is always used with the basis it was trained on; to ru
 a network trained on another basis (the paper's POD-NN), use align_signs().
 """
 
+from dataclasses import dataclass, replace
+
+import numpy as np
 from spod.sPOD_tools import give_interpolation_error, shifted_rPCA
 from spod.transforms import transforms
-from dataclasses import dataclass, replace
-import numpy as np
 
 
 @dataclass
 class PODResult:
     """POD basis and amplitudes, truncated to n_modes."""
 
-    modes: np.ndarray # For training data
-    time_amplitudes: np.ndarray # For training data
-    reconstruction: np.ndarray # Truncated reconstruction of training data
-    time_amplitudes_test: np.ndarray # For test data
+    modes: np.ndarray  # For training data
+    time_amplitudes: np.ndarray  # For training data
+    reconstruction: np.ndarray  # Truncated reconstruction of training data
+    time_amplitudes_test: np.ndarray  # For test data
 
 
 @dataclass
 class sPODResult:
     """sPOD bases and amplitudes per frame (lists with one entry per frame)."""
 
-    interpolation_error: float # Interpolation error for the transformation
-    offline_error: float # Offline error for the sPOD reconstruction
-    modes: list # For training data
-    time_amplitudes: list # For training data
-    reconstruction: np.ndarray # Truncated reconstruction of training data
-    time_amplitudes_test: list # For test data
+    interpolation_error: float  # Interpolation error for the transformation
+    offline_error: float  # Offline error for the sPOD reconstruction
+    modes: list  # For training data
+    time_amplitudes: list  # For training data
+    reconstruction: np.ndarray  # Truncated reconstruction of training data
+    time_amplitudes_test: list  # For test data
 
 
 def pod(q: np.ndarray, q_test: np.ndarray, n_modes: int) -> PODResult:
@@ -62,7 +63,12 @@ def pod(q: np.ndarray, q_test: np.ndarray, n_modes: int) -> PODResult:
 
     time_amplitudes_test = modes.T @ q_test
 
-    return PODResult(modes=modes, time_amplitudes=time_amplitudes, reconstruction=reconstruction, time_amplitudes_test=time_amplitudes_test)
+    return PODResult(
+        modes=modes,
+        time_amplitudes=time_amplitudes,
+        reconstruction=reconstruction,
+        time_amplitudes_test=time_amplitudes_test,
+    )
 
 
 def orientation(amplitudes: np.ndarray) -> np.ndarray:
@@ -93,7 +99,15 @@ def align_signs(result: PODResult, reference_orientation) -> PODResult:
     )
 
 
-def spod(q: np.ndarray, q_test: list, trafos: list, n_modes: int, n_iter: int, mu_factor: float = 0.005, lamda_factor: float = 10.0) -> sPODResult:
+def spod(
+    q: np.ndarray,
+    q_test: list,
+    trafos: list,
+    n_modes: int,
+    n_iter: int,
+    mu_factor: float = 0.005,
+    lamda_factor: float = 10.0,
+) -> sPODResult:
     """Shifted POD of q with spod.shifted_rPCA, truncated to n_modes per frame.
 
     The penalty parameters follow the paper: mu0 = N M / (4 sum|q|) * mu_factor
@@ -124,8 +138,7 @@ def spod(q: np.ndarray, q_test: list, trafos: list, n_modes: int, n_iter: int, m
     [N, M] = np.shape(qmat)
     mu0 = N * M / (4 * np.sum(np.abs(qmat))) * mu_factor
     lambd0 = 1 / np.sqrt(np.maximum(M, N)) * lamda_factor
-    ret = shifted_rPCA(q, trafos, nmodes_max=n_modes + 20, eps=1e-16, Niter=n_iter,
-                        use_rSVD=True, mu=mu0, lambd=lambd0)
+    ret = shifted_rPCA(q, trafos, nmodes_max=n_modes + 20, eps=1e-16, Niter=n_iter, use_rSVD=True, mu=mu0, lambd=lambd0)
     sPOD_frames, _, _ = ret.frames, ret.data_approx, ret.rel_err_hist
 
     ###########################################
@@ -149,7 +162,14 @@ def spod(q: np.ndarray, q_test: list, trafos: list, n_modes: int, n_iter: int, m
 
     err_trunc = np.linalg.norm(q - qtrunc) / np.linalg.norm(q)
 
-    return sPODResult(interpolation_error=interp_err, offline_error=err_trunc, modes=U_list, time_amplitudes=TA_list, reconstruction=qtrunc, time_amplitudes_test=TA_test_list)
+    return sPODResult(
+        interpolation_error=interp_err,
+        offline_error=err_trunc,
+        modes=U_list,
+        time_amplitudes=TA_list,
+        reconstruction=qtrunc,
+        time_amplitudes_test=TA_test_list,
+    )
 
 
 def reconstruct(modes: list, amplitudes: list, shifts: list, grid) -> np.ndarray:
@@ -160,8 +180,14 @@ def reconstruct(modes: list, amplitudes: list, shifts: list, grid) -> np.ndarray
     (interpolated); shifts[k] has one value per snapshot (column).
     """
     q = 0
-    for U, a, s in zip(modes, amplitudes, shifts):
-        trafo = transforms([grid.Nx, 1, 1, a.shape[1]], [grid.L], shifts=np.ravel(s), dx=[grid.dx],
-                           use_scipy_transform=False, interp_order=5)
+    for U, a, s in zip(modes, amplitudes, shifts, strict=True):
+        trafo = transforms(
+            [grid.Nx, 1, 1, a.shape[1]],
+            [grid.L],
+            shifts=np.ravel(s),
+            dx=[grid.dx],
+            use_scipy_transform=False,
+            interp_order=5,
+        )
         q = q + trafo.apply(U @ a)
     return q

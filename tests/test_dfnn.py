@@ -12,8 +12,13 @@ N_INPUTS, N_OUTPUTS, N_SAMPLES = 2, 18, 100
 
 def make_trainer(tmp_path):
     # CPU for reproducible numbers; no logs, progress bars or summaries in the test output.
-    return pl.Trainer(accelerator="cpu", logger=False, enable_progress_bar=False,
-                      enable_model_summary=False, default_root_dir=tmp_path)
+    return pl.Trainer(
+        accelerator="cpu",
+        logger=False,
+        enable_progress_bar=False,
+        enable_model_summary=False,
+        default_root_dir=tmp_path,
+    )
 
 
 @pytest.fixture

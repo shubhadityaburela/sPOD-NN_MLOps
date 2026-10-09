@@ -24,7 +24,7 @@ def error_per_time(q, q_pred):
     Normalised by the field's mean energy, so sqrt(mean_j E_j^2) equals the
     relative Frobenius error.
     """
-    return np.linalg.norm(q - q_pred, axis=0) / np.sqrt(np.mean(np.sum(q ** 2, axis=0)))
+    return np.linalg.norm(q - q_pred, axis=0) / np.sqrt(np.mean(np.sum(q**2, axis=0)))
 
 
 def error_inf_per_time(q, q_pred, eps=1e-16):

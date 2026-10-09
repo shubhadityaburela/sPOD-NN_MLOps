@@ -83,8 +83,8 @@ def run_synthetic():
     """
 
     import synthetic_sup as sup_module
-    from synthetic_sup import synthetic_sup
     from DFNN import scale_params, test_model
+    from synthetic_sup import synthetic_sup
 
     # fingerprint: spy on the sPOD-I helpers. synthetic_sup did `from Helper import *`,
     # so it looks these names up in its own namespace at call time; replacing them there
@@ -105,8 +105,13 @@ def run_synthetic():
     spy_on("my_interpolated_state")
 
     # Run the sPOD offline phase
-    df = synthetic_sup(training_samples=[0.1, 0.15, 0.2, 0.25, 0.3], testing_sample=[0.23],
-                   nmodes=8, spod_iter=300, plot_offline_data=False)
+    df = synthetic_sup(
+        training_samples=[0.1, 0.15, 0.2, 0.25, 0.3],
+        testing_sample=[0.23],
+        nmodes=8,
+        spod_iter=300,
+        plot_offline_data=False,
+    )
 
     # fingerprint: data generation and decomposition, before anything else touches df
     D = df.D
@@ -131,16 +136,14 @@ def run_synthetic():
     }
     stage = intermediates["decomposition"]
     for k in range(df.NumFrames):
-        amplitudes = df.TA_TRAIN[k * D:(k + 1) * D]
+        amplitudes = df.TA_TRAIN[k * D : (k + 1) * D]
         stage["frame%d_reconstruction" % (k + 1)] = fingerprint(df.U_list[k] @ amplitudes)
         stage["frame%d_amplitudes_train" % (k + 1)] = amplitude_fingerprint(amplitudes)
-        stage["frame%d_amplitudes_test" % (k + 1)] = amplitude_fingerprint(df.TA_TEST[k * D:(k + 1) * D])
-
+        stage["frame%d_amplitudes_test" % (k + 1)] = amplitude_fingerprint(df.TA_TEST[k * D : (k + 1) * D])
 
     # We collect the time amplitudes, shifts and the parameters for the training as well as the testing data.
     TA_TRAIN = df.TA_TRAIN
     SHIFTS_TRAIN = df.SHIFTS_TRAIN
-    PARAMS_TRAIN = df.PARAMS_TRAIN
     TA_TEST = df.TA_TEST
     SHIFTS_TEST = df.SHIFTS_TEST
     PARAMS_TEST = df.PARAMS_TEST
@@ -154,60 +157,67 @@ def run_synthetic():
     shifts_test = np.concatenate((np.reshape(SHIFTS_TEST[0], [1, -1]), np.reshape(SHIFTS_TEST[1], [1, -1])), axis=0)
 
     ta_train = np.concatenate((TA_TRAIN, shifts_train), axis=0)
-    ta_test = np.concatenate((TA_TEST, shifts_test), axis=0) 
+    ta_test = np.concatenate((TA_TEST, shifts_test), axis=0)
 
     # Prepare the parameters:
     params_sPOD = {
-        'scaling': True,  
-        'full_order_model_dimension': df.Nx,  
-        'reduced_order_model_dimension': ta_train.shape[0], 
-        'totalModes': ta_train.shape[0] - df.NumFrames,  
-        'num_early_stop': 100000  
-    
+        "scaling": True,
+        "full_order_model_dimension": df.Nx,
+        "reduced_order_model_dimension": ta_train.shape[0],
+        "totalModes": ta_train.shape[0] - df.NumFrames,
+        "num_early_stop": 100000,
     }
     params_POD = {
-            'scaling': True,  
-            'full_order_model_dimension': df.Nx, 
-            'reduced_order_model_dimension': TA_POD_TRAIN.shape[0], 
-            'totalModes': TA_POD_TRAIN.shape[0],  
-            'num_early_stop': 500  
+        "scaling": True,
+        "full_order_model_dimension": df.Nx,
+        "reduced_order_model_dimension": TA_POD_TRAIN.shape[0],
+        "totalModes": TA_POD_TRAIN.shape[0],
+        "num_early_stop": 500,
     }
-
 
     # Testing the trained model
-    test = {
-    'typeOfTest': "full",
-    'test_sample': 200
-    }
-    log_folder_base_sPOD = 'DNN_result/synthetic/training_results_sPOD/'
-    log_folder_trained_model_sPOD = sorted(Path(log_folder_base_sPOD).glob('*/'), key=os.path.getmtime)[-1]
-    PATH_sPOD = str(log_folder_trained_model_sPOD) + '/trained_weights/' + 'weights.pt'
+    test = {"typeOfTest": "full", "test_sample": 200}
+    log_folder_base_sPOD = "DNN_result/synthetic/training_results_sPOD/"
+    log_folder_trained_model_sPOD = sorted(Path(log_folder_base_sPOD).glob("*/"), key=os.path.getmtime)[-1]
+    PATH_sPOD = str(log_folder_trained_model_sPOD) + "/trained_weights/" + "weights.pt"
 
-    log_folder_base_POD = 'DNN_result/synthetic/training_results_POD/'
-    log_folder_trained_model_POD = sorted(Path(log_folder_base_POD).glob('*/'), key=os.path.getmtime)[-1]
-    PATH_POD = str(log_folder_trained_model_POD) + '/trained_weights/' + 'weights.pt'
+    log_folder_base_POD = "DNN_result/synthetic/training_results_POD/"
+    log_folder_trained_model_POD = sorted(Path(log_folder_base_POD).glob("*/"), key=os.path.getmtime)[-1]
+    PATH_POD = str(log_folder_trained_model_POD) + "/trained_weights/" + "weights.pt"
 
-    PATH_sPOD = 'DNN_result/synthetic/training_results_sPOD/2025_06_26__13-27-59/trained_weights/weights.pt'
-    PATH_POD = 'DNN_result/synthetic/training_results_POD/2025_06_26__14-24-05/trained_weights/weights.pt'
+    PATH_sPOD = "DNN_result/synthetic/training_results_sPOD/2025_06_26__13-27-59/trained_weights/weights.pt"
+    PATH_POD = "DNN_result/synthetic/training_results_POD/2025_06_26__14-24-05/trained_weights/weights.pt"
 
     # Scale the parameters before prediction
-    if '/trained_weights/weights.pt' in PATH_sPOD: address_sPOD = PATH_sPOD.replace('/trained_weights/weights.pt', '')
-    scaling_sPOD = np.load(address_sPOD + '/variables/' + 'scaling.npy', allow_pickle=True)
+    if "/trained_weights/weights.pt" in PATH_sPOD:
+        address_sPOD = PATH_sPOD.replace("/trained_weights/weights.pt", "")
+    scaling_sPOD = np.load(address_sPOD + "/variables/" + "scaling.npy", allow_pickle=True)
 
-    if '/trained_weights/weights.pt' in PATH_POD: address_POD = PATH_POD.replace('/trained_weights/weights.pt', '')
-    scaling_POD = np.load(address_POD + '/variables/' + 'scaling.npy', allow_pickle=True)
+    if "/trained_weights/weights.pt" in PATH_POD:
+        address_POD = PATH_POD.replace("/trained_weights/weights.pt", "")
+    scaling_POD = np.load(address_POD + "/variables/" + "scaling.npy", allow_pickle=True)
 
     PARAMS_TEST_sPOD = scale_params(PARAMS_TEST, params_sPOD, scaling_sPOD)
     PARAMS_TEST_POD = scale_params(PARAMS_TEST, params_POD, scaling_POD)
 
-
-    rel_err_sPOD, results_predicted_sPOD = test_model(ta_test, PARAMS_TEST_sPOD, saved_model=True, 
-                                                  PATH_TO_WEIGHTS=PATH_sPOD, params=params_sPOD,
-                                                  scaling=scaling_sPOD, batch_size=50) 
-    rel_err_POD, results_predicted_POD = test_model(TA_POD_TEST, PARAMS_TEST_POD, saved_model=True,
-                                                    PATH_TO_WEIGHTS=PATH_POD, params=params_POD,
-                                                    scaling=scaling_POD, batch_size=50)
-
+    rel_err_sPOD, results_predicted_sPOD = test_model(
+        ta_test,
+        PARAMS_TEST_sPOD,
+        saved_model=True,
+        PATH_TO_WEIGHTS=PATH_sPOD,
+        params=params_sPOD,
+        scaling=scaling_sPOD,
+        batch_size=50,
+    )
+    rel_err_POD, results_predicted_POD = test_model(
+        TA_POD_TEST,
+        PARAMS_TEST_POD,
+        saved_model=True,
+        PATH_TO_WEIGHTS=PATH_POD,
+        params=params_POD,
+        scaling=scaling_POD,
+        batch_size=50,
+    )
 
     TA_sPOD_pred = results_predicted_sPOD[:-2, :]
     shifts_sPOD_pred = results_predicted_sPOD[-2:, :]
@@ -220,7 +230,9 @@ def run_synthetic():
         "prediction_POD": fingerprint(results_predicted_POD),
     }
 
-    errors, errors_inf = df.OnlinePredictionAnalysis(TA_sPOD_pred, shifts_sPOD_pred, TA_POD_pred, plot_online=False, test_type=test)
+    errors, errors_inf = df.OnlinePredictionAnalysis(
+        TA_sPOD_pred, shifts_sPOD_pred, TA_POD_pred, plot_online=False, test_type=test
+    )
 
     # fingerprint: sPOD-I outputs captured by the spies during OnlinePredictionAnalysis
     shifts_interp = spied["my_delta_interpolate"]
@@ -233,11 +245,13 @@ def run_synthetic():
         "amplitudes_frame2": amplitude_fingerprint(amplitudes_interp[1]),
     }
 
-    return { "test_model_rel_err_sPOD": rel_err_sPOD,
-            "test_model_rel_err_POD":  rel_err_POD,
-            "errors":     errors,
-            "errors_inf": errors_inf,
-            "intermediates": intermediates}
+    return {
+        "test_model_rel_err_sPOD": rel_err_sPOD,
+        "test_model_rel_err_POD": rel_err_POD,
+        "errors": errors,
+        "errors_inf": errors_inf,
+        "intermediates": intermediates,
+    }
 
 
 # Lines like "Relative ... (sPOD-NN) is 0.0753..." or "... error =  3.2648e-05"
@@ -293,7 +307,7 @@ def main():
 
     methods = ["sPOD-NN", "POD-NN", "sPOD-I"]  # order returned by OnlinePredictionAnalysis
     curves = {}
-    for m, e, e_inf in zip(methods, result["errors"], result["errors_inf"]):
+    for m, e, e_inf in zip(methods, result["errors"], result["errors_inf"]):  # noqa: B905 (components of same size, so zip is safe)
         curves["E_j " + m] = [float(v) for v in e]
         curves["E_j_inf " + m] = [float(v) for v in e_inf]
 

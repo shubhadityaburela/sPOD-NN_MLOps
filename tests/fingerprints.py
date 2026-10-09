@@ -38,5 +38,3 @@ def assert_matches_amplitudes(amplitudes, ref, rtol, name=""):
     assert_allclose(np.linalg.norm(a, axis=1), ref["row_norms"], rtol=rtol, err_msg=f"{name}: row norms")
     signs = orientation(a)
     assert signs == ref["orientation"], f"{name}: mode signs flipped: {signs} != {ref['orientation']}"
-
-    

@@ -28,8 +28,10 @@ def interpolate_in_mu(values, mu_train, mu_test, nt):
     """
     mu_train, mu_test = np.asarray(mu_train, dtype=float), np.asarray(mu_test, dtype=float)
     if mu_test.min() < mu_train.min() or mu_test.max() > mu_train.max():
-        raise ValueError(f"mu_test {mu_test} outside the training range "
-                         f"[{mu_train.min()}, {mu_train.max()}]; sPOD-I does not extrapolate")
+        raise ValueError(
+            f"mu_test {mu_test} outside the training range "
+            f"[{mu_train.min()}, {mu_train.max()}]; sPOD-I does not extrapolate"
+        )
     rows = values.shape[0]
     per_sample = values.reshape(rows, len(mu_train), nt)
     interpolated = make_interp_spline(mu_train, per_sample, k=1, axis=1)(mu_test)

@@ -20,18 +20,18 @@ def values():
 
 
 def test_at_a_training_mu_returns_that_sample(values):
-    assert_allclose(interpolate_in_mu(values, MU, [0.2], NT), values[:, NT:2 * NT], rtol=1e-14)
+    assert_allclose(interpolate_in_mu(values, MU, [0.2], NT), values[:, NT : 2 * NT], rtol=1e-14)
 
 
 def test_between_two_mus_is_the_average(values):
-    expected = 0.5 * (values[:, :NT] + values[:, NT:2 * NT])
+    expected = 0.5 * (values[:, :NT] + values[:, NT : 2 * NT])
     assert_allclose(interpolate_in_mu(values, MU, [0.15], NT), expected, rtol=1e-14)
 
 
 def test_several_test_mus_are_stacked_like_the_input(values):
     out = interpolate_in_mu(values, MU, [0.1, 0.3], NT)
     assert out.shape == (3, 2 * NT)
-    assert_allclose(out, np.hstack([values[:, :NT], values[:, 2 * NT:]]), rtol=1e-14)
+    assert_allclose(out, np.hstack([values[:, :NT], values[:, 2 * NT :]]), rtol=1e-14)
 
 
 @pytest.mark.parametrize("mu", [0.05, 0.35])
@@ -42,7 +42,7 @@ def test_no_extrapolation(values, mu):
 
 def test_shifts_are_exact(train_set, test_set):
     # The synthetic shifts are mu * t, linear in mu: interpolation reproduces them.
-    for train_shift, test_shift in zip(train_set.shifts, test_set.shifts):
+    for train_shift, test_shift in zip(train_set.shifts, test_set.shifts, strict=True):
         out = interpolate_in_mu(train_shift, paper.TRAIN_MU, paper.TEST_MU, Grid().Nt)
         assert_allclose(out, test_shift, rtol=0, atol=1e-15)
 

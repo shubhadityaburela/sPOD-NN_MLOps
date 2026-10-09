@@ -10,10 +10,10 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from fingerprints import assert_matches_fingerprint
 from numpy.testing import assert_allclose
 
 import paper
-from fingerprints import assert_matches_fingerprint
 from spodnn.decomposition import align_signs
 from spodnn.scaling import Scaling
 
@@ -39,6 +39,7 @@ def paper_pod(repo):
 
 # --- the paper's files -------------------------------------------------------
 
+
 def test_paper_spod_scaling_values(paper_spod):
     assert paper_spod.has_shifts
     assert_allclose([paper_spod.amplitude_min, paper_spod.amplitude_max], [-1774.9142899159344, 1775.5707465424332])
@@ -57,8 +58,9 @@ def test_paper_pod_scaling_has_no_shifts_and_identity_params(paper_pod):
 
 def test_scaled_test_params_match_reference(paper_spod, test_set, golden):
     scaled = paper_spod.scale_params(test_set.params)
-    assert_matches_fingerprint(scaled, golden["intermediates"]["network"]["params_test_scaled"],
-                               1e-12, "params_test_scaled")
+    assert_matches_fingerprint(
+        scaled, golden["intermediates"]["network"]["params_test_scaled"], 1e-12, "params_test_scaled"
+    )
 
 
 def test_scale_params_does_not_modify_its_input(paper_spod, test_set):
@@ -68,6 +70,7 @@ def test_scale_params_does_not_modify_its_input(paper_spod, test_set):
 
 
 # --- fitting reproduces the paper's constants (needs the sPOD run) ----------
+
 
 @pytest.mark.slow
 def test_fit_reproduces_paper_spod_scaling(spod_result, train_set, paper_spod):
@@ -85,11 +88,13 @@ def test_fit_reproduces_paper_pod_amplitude_scaling(pod_result, train_set, paper
     aligned = align_signs(pod_result, reference)
     fitted = Scaling.fit(aligned.time_amplitudes, train_set.params, n_amplitudes=paper.POD_MODES)
     assert not fitted.has_shifts
-    assert_allclose([fitted.amplitude_min, fitted.amplitude_max],
-                    [paper_pod.amplitude_min, paper_pod.amplitude_max], rtol=1e-12)
+    assert_allclose(
+        [fitted.amplitude_min, fitted.amplitude_max], [paper_pod.amplitude_min, paper_pod.amplitude_max], rtol=1e-12
+    )
 
 
 # --- properties --------------------------------------------------------------
+
 
 @pytest.fixture
 def toy():
@@ -101,8 +106,10 @@ def toy():
 
 def test_fitted_training_data_spans_unit_interval(toy):
     outputs, params, scaling = toy
-    for scaled, rows in [(scaling.scale_outputs(outputs), [slice(0, 3), slice(3, 5)]),
-                         (scaling.scale_params(params), [slice(0, 1), slice(1, 2)])]:
+    for scaled, rows in [
+        (scaling.scale_outputs(outputs), [slice(0, 3), slice(3, 5)]),
+        (scaling.scale_params(params), [slice(0, 1), slice(1, 2)]),
+    ]:
         for r in rows:
             assert_allclose([scaled[r].min(), scaled[r].max()], [0.0, 1.0], atol=1e-15)
 

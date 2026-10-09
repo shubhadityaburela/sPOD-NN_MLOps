@@ -131,13 +131,19 @@ class Scaling:
     def save(self, path) -> None:
         """Write the constants as JSON (human-readable; floats round-trip exactly)."""
         shifts = None if not self.has_shifts else {"min": self.shift_min, "max": self.shift_max}
-        Path(path).write_text(json.dumps({
-            "format": FORMAT,
-            "n_amplitudes": self.n_amplitudes,
-            "amplitudes": {"min": self.amplitude_min, "max": self.amplitude_max},
-            "shifts": shifts,
-            "params": {"min": self.param_min.tolist(), "max": self.param_max.tolist()},
-        }, indent=2) + "\n")
+        Path(path).write_text(
+            json.dumps(
+                {
+                    "format": FORMAT,
+                    "n_amplitudes": self.n_amplitudes,
+                    "amplitudes": {"min": self.amplitude_min, "max": self.amplitude_max},
+                    "shifts": shifts,
+                    "params": {"min": self.param_min.tolist(), "max": self.param_max.tolist()},
+                },
+                indent=2,
+            )
+            + "\n"
+        )
 
     @classmethod
     def load(cls, path) -> "Scaling":

@@ -9,33 +9,9 @@ a Lightning module, so training, prediction and checkpoints (.ckpt) go through
 lightning's Trainer, e.g. trainer.predict(model, dataloaders=..., ckpt_path=...).
 """
 
-import numpy as np
-import torch.nn
-from numpy import vstack
-from numpy import sqrt
-from pandas import read_csv
-import sys
-from sklearn.metrics import mean_squared_error
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
-from torch.utils.data import random_split
-from torch import Tensor
-from torch.nn import Linear
-from torch.nn import Sigmoid
-from torch.nn import ReLU, ELU, LeakyReLU
-from torch.nn import Module
-from torch.optim import SGD
-from torch.nn import MSELoss
-from torch.nn import L1Loss, HuberLoss
-from torch.nn.init import xavier_uniform_
-import os
-import time
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import GradientBoostingRegressor
-
-import torch
-from dataclasses import dataclass
 import lightning.pytorch as pl
+from torch.nn import ELU, LeakyReLU, Linear, Module
+from torch.nn.init import xavier_uniform_
 
 
 # model definition
@@ -48,7 +24,7 @@ class MLP(Module):
 
     # define model elements
     def __init__(self, n_inputs, n_outputs):
-        super(MLP, self).__init__()
+        super().__init__()
         # input to first hidden layer
         self.input = Linear(n_inputs, 25)
         xavier_uniform_(self.input.weight)
@@ -115,9 +91,9 @@ class LitMLPModel(pl.LightningModule):
         The batch must be an (inputs, targets) pair; the targets are ignored.
         """
         # Extract features from the batch (ignores labels/targets during inference)
-        x, _ = batch 
-        
+        x, _ = batch
+
         # Pass features through the forward method
         preds = self(x)
-        
+
         return preds

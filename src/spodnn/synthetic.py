@@ -19,10 +19,11 @@ Ported from paper/synthetic_sup.py (create_data and the grid set-up in __init__)
 the numbers match the paper code to about 1e-14 (tests/test_synthetic.py).
 """
 
-from spod.transforms import transforms
-from scipy.special import eval_hermite
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+
 import numpy as np
+from scipy.special import eval_hermite
+from spod.transforms import transforms
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,7 @@ class Grid:
 
     Derived quantities are properties, computed from the fields on access.
     """
+
     Nx: int = 500
     Ny: int = 1
     Nt: int = 500
@@ -50,12 +52,12 @@ class Grid:
     @property
     def Xgrid(self) -> np.ndarray:
         """x on the space-time grid, shape (Nx, Nt): Xgrid[i, j] = x_i."""
-        return np.meshgrid(self.x, self.t, indexing='ij')[0]
+        return np.meshgrid(self.x, self.t, indexing="ij")[0]
 
     @property
     def Tgrid(self) -> np.ndarray:
         """t on the space-time grid, shape (Nx, Nt): Tgrid[i, j] = t_j."""
-        return np.meshgrid(self.x, self.t, indexing='ij')[1]
+        return np.meshgrid(self.x, self.t, indexing="ij")[1]
 
     @property
     def dx(self) -> float:
@@ -75,14 +77,15 @@ class SyntheticData:
     Samples are stacked along the time axis: columns k*Nt .. (k+1)*Nt - 1 belong
     to the k-th value of mu.
     """
-    q: np.ndarray            # (Nx, Nt * n_samples)
-    frames: list             # [q1, q2], the co-moving frame fields before shifting
-    shifts: list             # [shifts_frame1, shifts_frame2], each (1, Nt * n_samples)
-    params: np.ndarray       # (2, Nt * n_samples), rows [t, mu]
-    transforms: list         # the two spod transforms
+
+    q: np.ndarray  # (Nx, Nt * n_samples)
+    frames: list  # [q1, q2], the co-moving frame fields before shifting
+    shifts: list  # [shifts_frame1, shifts_frame2], each (1, Nt * n_samples)
+    params: np.ndarray  # (2, Nt * n_samples), rows [t, mu]
+    transforms: list  # the two spod transforms
 
 
-def generate(mu_values: np.ndarray, grid: Grid = Grid(), n_terms: int=8) -> SyntheticData:
+def generate(mu_values: np.ndarray, grid: Grid, n_terms: int = 8) -> SyntheticData:
     """Generate the synthetic snapshots q(x, t; mu) for each mu in mu_values.
 
     Args:
@@ -99,8 +102,9 @@ def generate(mu_values: np.ndarray, grid: Grid = Grid(), n_terms: int=8) -> Synt
         with rows [t, mu] (the order the committed networks were trained on), and
         the two transforms that apply the shifts.
     """
+
     # gauss hermite polynomials of order n
-    psi = lambda n, x: np.exp(-x ** 2 / 2) * eval_hermite(n, x)
+    psi = lambda n, x: np.exp(-(x**2) / 2) * eval_hermite(n, x)  # noqa: E731 (lambda is fine here)
     Nsamples = np.size(mu_values, 0)
     w = 0.015 * grid.L
     Nt = np.size(grid.Tgrid, 1)
@@ -113,12 +117,18 @@ def generate(mu_values: np.ndarray, grid: Grid = Grid(), n_terms: int=8) -> Synt
         q1 = np.zeros_like(XX)
         q2 = np.zeros_like(XX)
         for n in range(n_terms):  # loop over all components of the vector
-            q1 += (1 + np.exp(-2 * n * TT)) * mu_values[k] * np.cos(
-                - 2 * np.pi * TT / grid.T * (n + 1)) * psi(n, (
-                    XX + 0.1 * grid.L) / w)
-            q2 += (1 + np.exp(-2 * n * TT)) * mu_values[k] * np.cos(
-                - 2 * np.pi * TT / grid.T * (n + 1)) * psi(n, (
-                    XX - 0.1 * grid.L) / w)
+            q1 += (
+                (1 + np.exp(-2 * n * TT))
+                * mu_values[k]
+                * np.cos(-2 * np.pi * TT / grid.T * (n + 1))
+                * psi(n, (XX + 0.1 * grid.L) / w)
+            )
+            q2 += (
+                (1 + np.exp(-2 * n * TT))
+                * mu_values[k]
+                * np.cos(-2 * np.pi * TT / grid.T * (n + 1))
+                * psi(n, (XX - 0.1 * grid.L) / w)
+            )
 
         qs1.append(q1)
         qs2.append(-q2)
@@ -132,13 +142,16 @@ def generate(mu_values: np.ndarray, grid: Grid = Grid(), n_terms: int=8) -> Synt
     shifts = [np.concatenate(shifts, axis=1), -np.concatenate(shifts, axis=1)]
     data_shape = [grid.Nx, 1, 1, Nt * Nsamples]
     trafos = [
-        transforms(data_shape, [grid.L], shifts=np.squeeze(shifts[0]), dx=[grid.dx], use_scipy_transform=False,
-                    interp_order=5),
-        transforms(data_shape, [grid.L], shifts=np.squeeze(shifts[1]), dx=[grid.dx], use_scipy_transform=False,
-                    interp_order=5)]
+        transforms(
+            data_shape, [grid.L], shifts=np.squeeze(shifts[0]), dx=[grid.dx], use_scipy_transform=False, interp_order=5
+        ),
+        transforms(
+            data_shape, [grid.L], shifts=np.squeeze(shifts[1]), dx=[grid.dx], use_scipy_transform=False, interp_order=5
+        ),
+    ]
 
     q = 0
-    for trafo, qf in zip(trafos, q_frames):
+    for trafo, qf in zip(trafos, q_frames, strict=True):
         q += trafo.apply(qf)
 
     # Parameter matrix

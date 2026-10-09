@@ -1,5 +1,6 @@
-import spodnn
 from importlib.metadata import version
+
+import spodnn
 
 
 def test_version_matches_metadata():
