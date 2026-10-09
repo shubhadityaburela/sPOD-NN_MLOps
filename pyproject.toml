@@ -14,6 +14,7 @@ dependencies = [
     "matplotlib",
     "numba",
     "spod-vendored",
+    "lightning>=2.6.6",
 ]
 
 [build-system]
