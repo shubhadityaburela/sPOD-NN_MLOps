@@ -1,0 +1,22 @@
+---
+kind: "wildfire"
+dtype: "float32"
+step: 10 # To save every 10th step for further analysis
+edge_detect: true
+
+grid:
+  Lx: 500
+  Ly: 500
+  Nx: 500
+  Ny: 500
+  Nt: 500
+
+physics:
+  v_x: 0.2
+  v_y: 0
+  cfl: 0.8
+  c: 1.0
+
+beta:
+  train: [540, 550, 560, 570, 580]
+  test: [558.49]
