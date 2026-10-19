@@ -16,6 +16,11 @@ physics:
   v_y: 0
   cfl: 0.7
   c: 1.0
+  ThermalDiffusivity: 0.2136
+  PreExponentialFactor: 0.1625
+  TempRisePerSecond: 187.93
+  ScaledHeatTransferCoeff: 4.8372e-5
+  TAmbient: 300  # Not used per-se
 
 beta:
   train: [540, 550, 560, 570, 580]

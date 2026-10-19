@@ -84,6 +84,11 @@ class WildfirePhysicsConfig(BaseConfig):
     v_y: float
     cfl: float = Field(gt=0, le=1)
     c: PositiveFloat
+    ThermalDiffusivity: PositiveFloat
+    PreExponentialFactor: PositiveFloat
+    TempRisePerSecond: PositiveFloat
+    ScaledHeatTransferCoeff: PositiveFloat
+    TAmbient: float = Field(gt=273.15)
 
     @model_validator(mode="after")
     def validate_v_y(self) -> Self:
@@ -119,6 +124,15 @@ class WildfireCaseConfig(BaseConfig):
         if self.edge_detect and self.grid.Ny == 1:
             raise ValueError("edge_detect should be false if the problem is 1D")
 
+        return self
+
+    @model_validator(mode="after")
+    def case_edge_detect(self) -> Self:
+        if self.edge_detect:
+            if self.grid.Lx == self.grid.Nx and self.grid.Ly == self.grid.Ny:
+                return self
+            else:
+                raise ValueError("edge_detect will only work if Nx = Lx and Ny = Ly")
         return self
 
 
