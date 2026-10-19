@@ -19,7 +19,11 @@ dependencies = [
     "pyyaml>=6.0.3",
     "scikit-image>=0.26.0",
     "polartransform>=2.0.0",
+    "zarr>=3.4.1",
 ]
+
+[project.scripts]
+spodnn = "spodnn.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.10,<0.11"]
