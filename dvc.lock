@@ -1,0 +1,182 @@
+schema: '2.0'
+stages:
+  generate@synthetic:
+    cmd: spodnn generate configs/synthetic.yaml
+    deps:
+    - path: configs/synthetic.yaml
+      hash: md5
+      md5: ba626834667b2e74815e81e83866077a
+      size: 152
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/generate.py
+      hash: md5
+      md5: 99742de418f475325a58a7ab8a0436f0
+      size: 2501
+    - path: src/spodnn/synthetic.py
+      hash: md5
+      md5: 9fe499f6856fddb8c29f2a203ab77dc1
+      size: 5640
+    - path: src/spodnn/wildfire/operators.py
+      hash: md5
+      md5: a1c098931783b6d71db94211d153d5de
+      size: 2146
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: src/spodnn/wildfire/solver.py
+      hash: md5
+      md5: 707cb940c2bd12b8e541781196d7d501
+      size: 3669
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/synthetic.zarr
+      hash: md5
+      md5: 906d6c7b3acd5e17d46cb809246d3afb.dir
+      size: 10418803
+      nfiles: 29
+  generate@wildfire1d:
+    cmd: spodnn generate configs/wildfire1d.yaml
+    deps:
+    - path: configs/wildfire1d.yaml
+      hash: md5
+      md5: d065af9b3c5d975d61d83cd4264fb0f3
+      size: 436
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/generate.py
+      hash: md5
+      md5: 99742de418f475325a58a7ab8a0436f0
+      size: 2501
+    - path: src/spodnn/synthetic.py
+      hash: md5
+      md5: 9fe499f6856fddb8c29f2a203ab77dc1
+      size: 5640
+    - path: src/spodnn/wildfire/operators.py
+      hash: md5
+      md5: a1c098931783b6d71db94211d153d5de
+      size: 2146
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: src/spodnn/wildfire/solver.py
+      hash: md5
+      md5: 707cb940c2bd12b8e541781196d7d501
+      size: 3669
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/wildfire1d.zarr
+      hash: md5
+      md5: 3fa0f8b80ab9c9e46ab989a5fb0ec7fc.dir
+      size: 21640236
+      nfiles: 22
+  generate@wildfire2d:
+    cmd: spodnn generate configs/wildfire2d.yaml
+    deps:
+    - path: configs/wildfire2d.yaml
+      hash: md5
+      md5: 0162b20bd535918f1a4a28b3c50f64ce
+      size: 437
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/generate.py
+      hash: md5
+      md5: 99742de418f475325a58a7ab8a0436f0
+      size: 2501
+    - path: src/spodnn/synthetic.py
+      hash: md5
+      md5: 9fe499f6856fddb8c29f2a203ab77dc1
+      size: 5640
+    - path: src/spodnn/wildfire/operators.py
+      hash: md5
+      md5: a1c098931783b6d71db94211d153d5de
+      size: 2146
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: src/spodnn/wildfire/solver.py
+      hash: md5
+      md5: 707cb940c2bd12b8e541781196d7d501
+      size: 3669
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/wildfire2d.zarr
+      hash: md5
+      md5: 1455dc277891010cdd0318d1bccd576a.dir
+      size: 256380964
+      nfiles: 53
+  generate@wildfire2d_ww:
+    cmd: spodnn generate configs/wildfire2d_ww.yaml
+    deps:
+    - path: configs/wildfire2d_ww.yaml
+      hash: md5
+      md5: 7221aa7afef9f11d4b84e8b0d8a82a2b
+      size: 438
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/generate.py
+      hash: md5
+      md5: 99742de418f475325a58a7ab8a0436f0
+      size: 2501
+    - path: src/spodnn/synthetic.py
+      hash: md5
+      md5: 9fe499f6856fddb8c29f2a203ab77dc1
+      size: 5640
+    - path: src/spodnn/wildfire/operators.py
+      hash: md5
+      md5: a1c098931783b6d71db94211d153d5de
+      size: 2146
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: src/spodnn/wildfire/solver.py
+      hash: md5
+      md5: 707cb940c2bd12b8e541781196d7d501
+      size: 3669
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/wildfire2d_ww.zarr
+      hash: md5
+      md5: 50fc016511df19e008fa048c25f6172a.dir
+      size: 185079415
+      nfiles: 35
