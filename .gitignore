@@ -143,3 +143,7 @@ mlruns/
 !**/DNN_result/**/*.npy
 !**/DNN_result/**/*.pkl
 !**/DNN_result/**/*.pt
+
+
+# DVC storage should never be tracked
+dvc-storage/
