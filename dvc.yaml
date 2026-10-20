@@ -1,0 +1,21 @@
+stages:
+  generate:
+    foreach:                     # one stage per item: generate@synthetic, generate@wildfire1d, …
+      - synthetic
+      - wildfire1d
+      - wildfire2d
+      - wildfire2d_ww
+    do:                          # the template; ${item} is replaced by each name above
+      cmd: spodnn generate configs/${item}.yaml
+      deps:
+        - configs/${item}.yaml
+        - src/spodnn/config.py
+        - src/spodnn/generate.py
+        - src/spodnn/synthetic.py
+        - src/spodnn/wildfire/operators.py
+        - src/spodnn/wildfire/polar.py
+        - src/spodnn/wildfire/shifts.py
+        - src/spodnn/wildfire/solver.py
+        - uv.lock
+      outs:
+        - data/${item}.zarr
