@@ -7,6 +7,8 @@ transform:
   use_scipy_transform: false
   interp_order: 5
 
+# nmodes_max 10 as in the paper's training sPOD: with 5, frames 1 and 3 sat at the cap (T [5, 3, 5],
+# S [5, 2, 5]). The paper's test sPOD used 5; here it allows 10 too, but its ranks stay below 5 anyway.
 spod:
-  T: {n_iter: 100, mu_factor: 0.001, lambda_factor: 5, nmodes: null, nmodes_max: 5, eps: 1.0e-16}
-  S: {n_iter: 50, mu_factor: 0.005, lambda_factor: 5, nmodes: null, nmodes_max: 5, eps: 1.0e-16}
+  T: {n_iter: 100, mu_factor: 0.001, lambda_factor: 5, nmodes: null, nmodes_max: 10, eps: 1.0e-16}
+  S: {n_iter: 50, mu_factor: 0.005, lambda_factor: 5, nmodes: null, nmodes_max: 10, eps: 1.0e-16}
