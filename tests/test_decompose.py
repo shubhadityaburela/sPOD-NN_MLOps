@@ -5,6 +5,8 @@ from (beta index, variable, grid point, time step), so a test can check that eac
 row and column ended up exactly where it belongs.
 """
 
+from dataclasses import replace
+
 import numpy as np
 import pytest
 import zarr
@@ -14,8 +16,15 @@ from numpy.testing import assert_allclose, assert_array_equal
 import spodnn.decompose as decompose
 from spodnn.config import load_config
 from spodnn.dataset import _array_sha256
-from spodnn.decompose import FRAMES, Variable, build_transforms, layout, load_variable, variable_names
-from spodnn.decomposition_config import TransformConfig
+from spodnn.decompose import FRAMES, Variable, build_transforms, layout, load_variable, run_spod, variable_names
+from spodnn.decomposition_config import (
+    SyntheticDecompositionConfig,
+    TransformConfig,
+    WildfireDecompositionConfig,
+    WildfireSPODConfig,
+    sPODConfig,
+)
+from spodnn.synthetic import Grid, generate
 
 NX, NY, NT = 6, 4, 3  # small enough that every value below stays exact in float32
 TEST = [1]  # a test beta in the middle: the split must follow the indices, not the order
@@ -114,6 +123,7 @@ def test_1d_rows_and_split(tmp_path, lay, name):
     assert var.q_train.dtype == np.float64
     assert_array_equal(var.q_train, expected(TRAIN))  # beta blocks side by side, in index order
     assert_array_equal(var.q_test, expected(TEST))
+    assert var.q_train_cartesian is None and var.q_test_cartesian is None  # q_train already is Cartesian
 
 
 @pytest.mark.parametrize("name", ["T", "S"])
@@ -126,6 +136,12 @@ def test_2d_rows_are_deinterleaved_in_fortran_order(tmp_path, no_polar, lay, nam
         for ix, iy, j in np.ndindex(NX, NY, NT):
             assert field[ix, iy, j] == code(i, VAR[name], ix + NX * iy, j)
     assert set(no_polar) == {1 if lay == "2d_ww" else 0}  # the paper's fill values
+    # The Cartesian copy for the POD baseline: the variable's rows as stored, β side by side.
+    expected = lambda betas: np.concatenate(  # noqa: E731
+        [[[code(i, VAR[name], p, j) for j in range(NT)] for p in range(NX * NY)] for i in betas], axis=1
+    )
+    assert_array_equal(var.q_train_cartesian, expected(TRAIN))
+    assert_array_equal(var.q_test_cartesian, expected(TEST))
 
 
 @pytest.mark.parametrize("lay", ["synthetic", "1d", "2d", "2d_ww"])
@@ -260,3 +276,102 @@ def test_2d_ww_expands_the_radial_shift():
     rolled = np.roll(q[:, 1].reshape(n_r, n_theta), -2, axis=0).ravel()
     assert_allclose(shifted[:, 1], rolled, atol=1e-12)
     assert_array_equal(identity.apply(q), q)
+
+
+# ---------------------------------------------------------------- run_spod
+
+SPOD = sPODConfig(n_iter=5, mu_factor=0.05, lambda_factor=10.0, nmodes=None, nmodes_max=4, eps=1e-16)
+
+
+@pytest.fixture(scope="module")
+def two_waves():
+    """Small synthetic data (two structures moving apart): three training mu, one test mu."""
+    grid = Grid(Nx=64, Nt=32)
+    return grid, generate(np.array([0.1, 0.2, 0.3]), grid), generate(np.array([0.25]), grid)
+
+
+def wave_variable(two_waves, lay):
+    """The synthetic data as a "synthetic" variable (analytic test frames), or as a "1d" one:
+    frames shift, identity, shift, with nothing in the identity frame and no test frames."""
+    grid, train, test = two_waves
+    s_train, s_test = np.concatenate(train.shifts), np.concatenate(test.shifts)  # (2, M)
+    if lay == "1d":
+        s_train = np.stack([s_train[0], 0 * s_train[0], s_train[1]])
+        s_test = np.stack([s_test[0], 0 * s_test[0], s_test[1]])
+    return Variable(
+        name="q" if lay == "synthetic" else "T",
+        layout=lay,
+        q_train=train.q,
+        q_test=test.q,
+        shifts_train=s_train,
+        shifts_test=s_test,
+        grid_shape=(grid.Nx, 1),
+        domain=[grid.L],
+        spacing=[grid.dx],
+        frames_test=test.frames if lay == "synthetic" else None,
+    )
+
+
+def config(lay):
+    if lay == "synthetic":
+        return SyntheticDecompositionConfig(penalty="matrix", transform=OWN, spod=SPOD)
+    return WildfireDecompositionConfig(penalty="matrix", transform=OWN, spod=WildfireSPODConfig(T=SPOD, S=SPOD))
+
+
+def test_run_spod_synthetic_projects_the_analytic_test_frames(two_waves):
+    var = wave_variable(two_waves, "synthetic")
+    result = run_spod(var, config("synthetic"), SPOD)
+    assert result.test_spod is None
+    for U, A_test, frame in zip(result.spod.modes, result.spod.time_amplitudes_test, var.frames_test, strict=True):
+        assert_allclose(A_test, U.T @ frame, rtol=1e-12)
+    assert_array_equal(result.shifts_train, var.shifts_train)  # both frames move: two shift outputs
+    assert result.shift_basis is None
+    assert result.pod.modes.shape[1] == sum(result.spod.ranks) + 2  # POD-NN: as many outputs as sPOD-NN
+
+
+def test_run_spod_wildfire_gets_test_frames_from_a_second_spod(two_waves):
+    var = wave_variable(two_waves, "1d")
+    result = run_spod(var, config("1d"), SPOD)
+    assert len(result.spod.modes) == len(result.test_spod.modes) == 3
+    assert result.test_spod.time_amplitudes_test is None
+    test_frames = [U @ A for U, A in zip(result.test_spod.modes, result.test_spod.time_amplitudes, strict=True)]
+    for U, A_test, frame in zip(result.spod.modes, result.spod.time_amplitudes_test, test_frames, strict=True):
+        assert A_test.shape == (U.shape[1], var.q_test.shape[1])
+        assert_allclose(A_test, U.T @ frame, rtol=1e-12)
+    assert_array_equal(result.shifts_train, var.shifts_train[[0, 2]])  # frame 2 is the identity
+    assert_array_equal(result.shifts_test, var.shifts_test[[0, 2]])
+    assert result.pod.modes.shape[1] == sum(result.spod.ranks) + 2
+
+
+def test_pod_baseline_uses_the_cartesian_snapshots_when_given(two_waves):
+    var = wave_variable(two_waves, "synthetic")
+    rng = np.random.default_rng(0)
+    cartesian = replace(
+        var,
+        q_train_cartesian=rng.standard_normal((40, var.q_train.shape[1])),
+        q_test_cartesian=rng.standard_normal((40, var.q_test.shape[1])),
+    )
+    result = run_spod(cartesian, config("synthetic"), SPOD)
+    assert result.pod.modes.shape[0] == 40  # the POD basis lives on the Cartesian grid
+    assert result.spod.modes[0].shape[0] == var.q_train.shape[0]  # sPOD on q_train as before
+
+
+def test_2d_shift_target_is_the_radial_shift_of_frame_1():
+    shifts = np.random.default_rng(0).standard_normal((2, 2, 6))  # (frame, (r, theta), M)
+    var = variable("2d", shifts, 4, (2, 2), [1.0, 1.0], [1.0, 1.0])
+    train, test, basis = decompose._shift_targets(var, None)
+    assert_array_equal(train, shifts[0, :1])
+    assert_array_equal(test, shifts[0, :1, :1])
+    assert basis is None
+
+
+def test_2d_ww_shift_targets_use_the_training_shift_basis():
+    rng = np.random.default_rng(0)
+    basis_true = rng.standard_normal((10, 3))  # radial shifts of rank 3 over N_theta = 10 angles
+    radial_train, radial_test = basis_true @ rng.standard_normal((3, 12)), basis_true @ rng.standard_normal((3, 4))
+    var = replace(variable("2d_ww", radial_train, 4, (2, 2), [1.0, 1.0], [1.0, 1.0]), shifts_test=radial_test)
+    train, test, basis = decompose._shift_targets(var, 3)
+    assert (train.shape, test.shape, basis.shape) == ((3, 12), (3, 4), (10, 3))
+    assert_allclose(basis @ train, radial_train, atol=1e-12)  # rank 3 is exact for rank-3 shifts
+    assert_allclose(test, basis.T @ radial_test, rtol=1e-12)  # projected, not a basis of its own
+    assert_allclose(basis @ test, radial_test, atol=1e-12)
