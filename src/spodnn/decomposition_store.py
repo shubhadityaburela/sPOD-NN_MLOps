@@ -28,9 +28,9 @@ from importlib.metadata import version
 from pathlib import Path
 
 import numpy as np
+import spod
 import zarr
 
-import spod
 from spodnn.config import config_hash
 from spodnn.dataset import PACKAGE_DIR, _array_sha256, _git, read_manifest, swap_in, verify
 from spodnn.dataset import store_path as data_store_path
