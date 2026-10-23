@@ -1,0 +1,16 @@
+---
+kind: "synthetic"
+penalty: "matrix"
+shift_modes: null
+
+transform:
+  use_scipy_transform: false
+  interp_order: 5
+
+spod:
+  n_iter: 300
+  mu_factor: 0.005
+  lambda_factor: 10.0
+  nmodes: 8
+  nmodes_max: 28
+  eps: 1.0e-16

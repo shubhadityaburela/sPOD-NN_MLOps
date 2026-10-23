@@ -1,0 +1,12 @@
+---
+kind: "wildfire"
+penalty: "matrix"
+shift_modes: null
+
+transform:
+  use_scipy_transform: false
+  interp_order: 5
+
+spod:
+  T: {n_iter: 100, mu_factor: 0.001, lambda_factor: 5, nmodes: null, nmodes_max: 5, eps: 1.0e-16}
+  S: {n_iter: 50, mu_factor: 0.005, lambda_factor: 5, nmodes: null, nmodes_max: 5, eps: 1.0e-16}
