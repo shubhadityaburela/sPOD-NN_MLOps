@@ -180,3 +180,223 @@ stages:
       md5: 50fc016511df19e008fa048c25f6172a.dir
       size: 185079415
       nfiles: 35
+  decompose@synthetic:
+    cmd: spodnn decompose configs/decomposition/synthetic.yaml
+    deps:
+    - path: configs/decomposition/synthetic.yaml
+      hash: md5
+      md5: e1d9aa5d76d94fccef8fc1c6206395ac
+      size: 223
+    - path: data/synthetic.zarr
+      hash: md5
+      md5: 906d6c7b3acd5e17d46cb809246d3afb.dir
+      size: 10418803
+      nfiles: 29
+    - path: sPOD/src/spod/sPOD_tools.py
+      hash: md5
+      md5: c60217785b63958a408a5fbad053b787
+      size: 27907
+    - path: sPOD/src/spod/transforms.py
+      hash: md5
+      md5: 096af71e284910d2448b7f9f4d858468
+      size: 25124
+      isexec: true
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/decompose.py
+      hash: md5
+      md5: 9a4d1ebbd4890867fda101bf248ec9d6
+      size: 14407
+    - path: src/spodnn/decomposition.py
+      hash: md5
+      md5: 67323e062228e237f7efc9b8b5b8a2d2
+      size: 9498
+    - path: src/spodnn/decomposition_config.py
+      hash: md5
+      md5: a95df10751d3b5ea48bc02ad5967b77e
+      size: 4779
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/decomposition/synthetic.zarr
+      hash: md5
+      md5: e44b8626ebbc61eb27960a6daaf21c29.dir
+      size: 950499
+      nfiles: 24
+  decompose@wildfire1d:
+    cmd: spodnn decompose configs/decomposition/wildfire1d.yaml
+    deps:
+    - path: configs/decomposition/wildfire1d.yaml
+      hash: md5
+      md5: 15c1ad8a4ccc6a0171f21c7aa7a83f5a
+      size: 318
+    - path: data/wildfire1d.zarr
+      hash: md5
+      md5: 3fa0f8b80ab9c9e46ab989a5fb0ec7fc.dir
+      size: 21640236
+      nfiles: 22
+    - path: sPOD/src/spod/sPOD_tools.py
+      hash: md5
+      md5: c60217785b63958a408a5fbad053b787
+      size: 27907
+    - path: sPOD/src/spod/transforms.py
+      hash: md5
+      md5: 096af71e284910d2448b7f9f4d858468
+      size: 25124
+      isexec: true
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/decompose.py
+      hash: md5
+      md5: 9a4d1ebbd4890867fda101bf248ec9d6
+      size: 14407
+    - path: src/spodnn/decomposition.py
+      hash: md5
+      md5: 67323e062228e237f7efc9b8b5b8a2d2
+      size: 9498
+    - path: src/spodnn/decomposition_config.py
+      hash: md5
+      md5: a95df10751d3b5ea48bc02ad5967b77e
+      size: 4779
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/decomposition/wildfire1d.zarr
+      hash: md5
+      md5: 4fed2580891d6ed8fc4ccaa62d207995.dir
+      size: 2625237
+      nfiles: 61
+  decompose@wildfire2d:
+    cmd: spodnn decompose configs/decomposition/wildfire2d.yaml
+    deps:
+    - path: configs/decomposition/wildfire2d.yaml
+      hash: md5
+      md5: fb8b7ce2e7f50c6186cb53c4a68f7a84
+      size: 310
+    - path: data/wildfire2d.zarr
+      hash: md5
+      md5: 1455dc277891010cdd0318d1bccd576a.dir
+      size: 256380964
+      nfiles: 53
+    - path: sPOD/src/spod/sPOD_tools.py
+      hash: md5
+      md5: c60217785b63958a408a5fbad053b787
+      size: 27907
+    - path: sPOD/src/spod/transforms.py
+      hash: md5
+      md5: 096af71e284910d2448b7f9f4d858468
+      size: 25124
+      isexec: true
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/decompose.py
+      hash: md5
+      md5: 9a4d1ebbd4890867fda101bf248ec9d6
+      size: 14407
+    - path: src/spodnn/decomposition.py
+      hash: md5
+      md5: 67323e062228e237f7efc9b8b5b8a2d2
+      size: 9498
+    - path: src/spodnn/decomposition_config.py
+      hash: md5
+      md5: a95df10751d3b5ea48bc02ad5967b77e
+      size: 4779
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/decomposition/wildfire2d.zarr
+      hash: md5
+      md5: c563f093009c8b46868c1b9bd0c3dae2.dir
+      size: 72335338
+      nfiles: 191
+  decompose@wildfire2d_ww:
+    cmd: spodnn decompose configs/decomposition/wildfire2d_ww.yaml
+    deps:
+    - path: configs/decomposition/wildfire2d_ww.yaml
+      hash: md5
+      md5: fb435e42eeec5fa4336d0f19fbf363ed
+      size: 308
+    - path: data/wildfire2d_ww.zarr
+      hash: md5
+      md5: 50fc016511df19e008fa048c25f6172a.dir
+      size: 185079415
+      nfiles: 35
+    - path: sPOD/src/spod/sPOD_tools.py
+      hash: md5
+      md5: c60217785b63958a408a5fbad053b787
+      size: 27907
+    - path: sPOD/src/spod/transforms.py
+      hash: md5
+      md5: 096af71e284910d2448b7f9f4d858468
+      size: 25124
+      isexec: true
+    - path: src/spodnn/config.py
+      hash: md5
+      md5: 4fdfc184de2327f30041fa9cdf64ecdb
+      size: 5261
+    - path: src/spodnn/decompose.py
+      hash: md5
+      md5: 9a4d1ebbd4890867fda101bf248ec9d6
+      size: 14407
+    - path: src/spodnn/decomposition.py
+      hash: md5
+      md5: 67323e062228e237f7efc9b8b5b8a2d2
+      size: 9498
+    - path: src/spodnn/decomposition_config.py
+      hash: md5
+      md5: a95df10751d3b5ea48bc02ad5967b77e
+      size: 4779
+    - path: src/spodnn/wildfire/polar.py
+      hash: md5
+      md5: 787759560b2e60bd37311870238f34f5
+      size: 1885
+    - path: src/spodnn/wildfire/shifts.py
+      hash: md5
+      md5: 0998d21b87a881d1e697b339d055fa0d
+      size: 5409
+    - path: uv.lock
+      hash: md5
+      md5: 5ff23e7ab20d6d94ca246313ddc9e495
+      size: 590838
+    outs:
+    - path: data/decomposition/wildfire2d_ww.zarr
+      hash: md5
+      md5: 429956866180a6ccfa2d7b72a25f5ae5.dir
+      size: 58828037
+      nfiles: 183
