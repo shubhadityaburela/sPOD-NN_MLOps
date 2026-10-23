@@ -232,12 +232,16 @@ def write_case(cfg, case, out_dir, force=False):
         shutil.rmtree(tmp, ignore_errors=True)
         raise
 
-    # Swap in the new store: the old one is only deleted once the new one is in place.
+    swap_in(tmp, path)
+    log.info("%s: wrote %s in %.1f s", case, path, sum(runtimes))
+    return path
+
+
+def swap_in(tmp, path):
+    """Replace the store at path by the complete one at tmp; the old store is only deleted once the new one is in place."""
     old = path.with_name(path.name + ".old")
     shutil.rmtree(old, ignore_errors=True)
     if path.exists():
         path.rename(old)
     tmp.rename(path)
     shutil.rmtree(old, ignore_errors=True)
-    log.info("%s: wrote %s in %.1f s", case, path, sum(runtimes))
-    return path
