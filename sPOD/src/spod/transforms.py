@@ -505,7 +505,11 @@ class transforms:
         def my_parallel_fun(it):
             col,row,val = compute_general_shift_matrix_numba(shifts[..., it], np.asarray(domain_size), np.asarray(spacings),
                                                np.asarray(Ngrid), Ix, Iy)
-            return sparse.coo_matrix((val, (row, col)), shape=(Nx * Ny, Nx * Ny)).tocsc()
+            # Drop the exact zeros of the 4x4 stencil (e.g. all 12 off-axis ones for a purely
+            # radial shift): T @ v is bitwise unchanged and memory falls by up to ~7x.
+            mat = sparse.coo_matrix((val, (row, col)), shape=(Nx * Ny, Nx * Ny)).tocsc()
+            mat.eliminate_zeros()
+            return mat
 
         Tmat_time_list = Parallel(n_jobs=-2)(delayed(my_parallel_fun)(it) for it in range(Nt))
         # for it in range(Nt):
