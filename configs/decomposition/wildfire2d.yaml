@@ -1,0 +1,12 @@
+---
+kind: "wildfire"
+penalty: "grid"
+shift_modes: null
+
+transform:
+  use_scipy_transform: true
+  interp_order: 5
+
+spod:
+  T: {n_iter: 15, mu_factor: 0.7, lambda_factor: 1, nmodes: null, nmodes_max: 12, eps: 1.0e-4}
+  S: {n_iter: 30, mu_factor: 0.9, lambda_factor: 1, nmodes: null, nmodes_max: 12, eps: 1.0e-4}

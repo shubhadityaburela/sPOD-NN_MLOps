@@ -15,7 +15,15 @@ dependencies = [
     "numba",
     "spod-vendored",
     "lightning>=2.6.6",
+    "pydantic>=2.14.1",
+    "pyyaml>=6.0.3",
+    "scikit-image>=0.26.0",
+    "polartransform>=2.0.0",
+    "zarr>=3.4.1",
 ]
+
+[project.scripts]
+spodnn = "spodnn.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.10,<0.11"]
@@ -23,6 +31,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "dvc>=3.67.1",
     "pre-commit>=4.6.2",
     "pytest",
     "ruff",
@@ -52,7 +61,8 @@ explicit = true
 members = ["sPOD"]
 
 [tool.pytest.ini_options]
-markers = ["slow: takes minutes (runs sPOD); skip with -m 'not slow'"]
+markers = ["slow: takes long (runs sPOD or compiles numba); skipped by default, run with -m slow or -m ''"]
+addopts = ["-m", "not slow"]  # a -m on the command line overrides this; CI runs everything
 
 
 [tool.ruff]
@@ -62,6 +72,11 @@ extend-exclude = ["paper", "sPOD", "DL-ROM", "WildlandFire_model"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+# sPOD is a library (vendored). Without this, macOS's case-insensitive file system lets ruff find the
+# sPOD/ folder for `import spod` and sort it as first-party, while Linux (CI) sorts it as third-party.
+known-third-party = ["spod"]
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore `UP` `(pyupgrade)`.

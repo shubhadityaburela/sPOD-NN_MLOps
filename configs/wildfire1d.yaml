@@ -1,0 +1,27 @@
+---
+kind: "wildfire"
+dtype: "float32"
+step: 10 # To save every 10th step for further analysis
+edge_detect: false
+
+grid:
+  Lx: 1000
+  Ly: 1
+  Nx: 3000
+  Ny: 1
+  Nt: 6000
+
+physics:
+  v_x: 0
+  v_y: 0
+  cfl: 0.7
+  c: 1.0
+  ThermalDiffusivity: 0.2136
+  PreExponentialFactor: 0.1625
+  TempRisePerSecond: 187.93
+  ScaledHeatTransferCoeff: 4.8372e-5
+  TAmbient: 300  # Not used per-se
+
+beta:
+  train: [540, 550, 560, 570, 580]
+  test: [558.49]

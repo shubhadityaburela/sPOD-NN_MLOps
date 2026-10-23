@@ -11,8 +11,11 @@ import numpy as np
 import pytest
 from fingerprints import assert_matches_amplitudes, assert_matches_fingerprint
 from numpy.testing import assert_allclose
+from spod.sPOD_tools import shifted_rPCA
 
+import spodnn.decomposition as decomposition
 from spodnn.decomposition import align_signs, orientation, pod, spod
+from spodnn.synthetic import Grid, generate
 
 # Tolerances from evidence: a deterministic LAPACK SVD reproduces the reference to
 # ~1e-14; seeded sPOD to ~5e-13 (with margin for other platforms' BLAS).
@@ -159,3 +162,80 @@ def test_spod_shapes_for_other_n_modes(train_set, test_set):
         assert A_test.shape == (n_modes, test_set.q.shape[1])
     assert result.reconstruction.shape == train_set.q.shape
     assert np.isfinite(result.offline_error)
+
+
+# --- sPOD: the options the wildfire cases use --------------------------------
+
+
+@pytest.fixture(scope="module")
+def small():
+    """A small synthetic case: three training mu and one test mu on a coarse grid."""
+    small_grid = Grid(Nx=64, Nt=32)
+    return generate(np.array([0.1, 0.2, 0.3]), small_grid), generate(np.array([0.25]), small_grid)
+
+
+@pytest.fixture
+def rpca_calls(monkeypatch):
+    """Record the keyword arguments spod() passes to shifted_rPCA (the run itself is real)."""
+    calls = []
+
+    def recording(q, trafos, **kwargs):
+        calls.append(kwargs)
+        return shifted_rPCA(q, trafos, **kwargs)
+
+    monkeypatch.setattr(decomposition, "shifted_rPCA", recording)
+    return calls
+
+
+def test_matrix_penalty_and_default_nmodes_max(small, rpca_calls):
+    train, test = small
+    spod(train.q, test.frames, train.transforms, n_modes=3, n_iter=2, mu_factor=0.5, lamda_factor=4.0)
+    n, m = train.q.shape
+    assert_allclose(rpca_calls[0]["mu"], n * m / (4 * np.abs(train.q).sum()) * 0.5, rtol=1e-14)
+    assert_allclose(rpca_calls[0]["lambd"], 4.0 / np.sqrt(max(n, m)), rtol=1e-14)
+    assert rpca_calls[0]["nmodes_max"] == 3 + 20  # the paper's synthetic setting
+
+
+def test_grid_penalty_uses_the_grid_size(small, rpca_calls):
+    train, test = small
+    spod(train.q, test.frames, train.transforms, n_modes=3, n_iter=2, mu_factor=0.5, lamda_factor=4.0,
+         penalty="grid", grid_shape=(16, 40), nmodes_max=7, eps=1e-4)  # fmt: skip
+    n = train.q.shape[0]
+    assert_allclose(rpca_calls[0]["mu"], n / (4 * np.abs(train.q).sum()) * 0.5, rtol=1e-14)
+    assert_allclose(rpca_calls[0]["lambd"], 4.0 / np.sqrt(40), rtol=1e-14)
+    assert (rpca_calls[0]["nmodes_max"], rpca_calls[0]["eps"]) == (7, 1e-4)
+
+
+def test_n_modes_none_keeps_the_rank_spod_finds(small):
+    train, test = small
+    # mu_factor 0.05: on this coarse grid the paper's 0.005 needs ~30 iterations to get going.
+    kept = spod(train.q, test.frames, train.transforms, n_modes=None, n_iter=5, mu_factor=0.05, nmodes_max=6)
+    truncated = spod(train.q, test.frames, train.transforms, n_modes=1, n_iter=5, mu_factor=0.05, nmodes_max=6)
+    assert truncated.ranks == [1, 1]
+    for U, A, A_test, rank in zip(kept.modes, kept.time_amplitudes, kept.time_amplitudes_test, kept.ranks, strict=True):
+        assert 1 <= rank <= 6
+        assert U.shape[1] == A.shape[0] == A_test.shape[0] == rank
+    assert sum(kept.ranks) > sum(truncated.ranks)
+
+
+def test_without_test_frames_there_are_no_test_amplitudes(small):
+    train, _ = small
+    result = spod(train.q, None, train.transforms, n_modes=2, n_iter=4, mu_factor=0.05)
+    assert result.time_amplitudes_test is None
+    assert len(result.error_history) == 4  # one residual per iteration
+    assert result.error_history[-1] < result.error_history[0]
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"penalty": "frobenius"}, "penalty must be"),
+        ({"penalty": "grid"}, "needs grid_shape"),
+        ({"n_modes": None}, "needs an explicit nmodes_max"),
+    ],
+    ids=["unknown-penalty", "grid-without-shape", "keep-rank-without-nmodes_max"],
+)
+def test_bad_arguments_are_rejected(small, kwargs, match):
+    train, test = small
+    with pytest.raises(ValueError, match=match):
+        spod(train.q, test.frames, train.transforms, **{"n_modes": 2, "n_iter": 1, **kwargs})
