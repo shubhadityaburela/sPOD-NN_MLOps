@@ -19,3 +19,26 @@ stages:
         - uv.lock
       outs:
         - data/${item}.zarr
+
+  decompose:
+    foreach:                     # decompose@synthetic, …: one per dataset, same names as generate
+      - synthetic
+      - wildfire1d
+      - wildfire2d
+      - wildfire2d_ww
+    do:
+      cmd: spodnn decompose configs/decomposition/${item}.yaml
+      deps:
+        - data/${item}.zarr      # an out of generate@${item}: this links the two stages
+        - configs/decomposition/${item}.yaml
+        - src/spodnn/config.py
+        - src/spodnn/decomposition_config.py
+        - src/spodnn/decompose.py
+        - src/spodnn/decomposition.py
+        - src/spodnn/wildfire/polar.py
+        - src/spodnn/wildfire/shifts.py
+        - sPOD/src/spod/sPOD_tools.py   # vendored sPOD: a patch there can change the results
+        - sPOD/src/spod/transforms.py
+        - uv.lock
+      outs:
+        - data/decomposition/${item}.zarr
