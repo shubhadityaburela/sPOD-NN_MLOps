@@ -84,9 +84,9 @@ def compute_general_shift_matrix_numba( shifts, domain_size, spacings, Ngrid, Ix
    idx_m1  idx_0    idx_1   idx_2
   =idx_0-1        =idx_0+1
    '''
-    col = [np.int(x) for x in range(0)]
-    row = [np.int(x) for x in range(0)]
-    val = [np.float(x) for x in range(0)]
+    col = [int(x) for x in range(0)]
+    row = [int(x) for x in range(0)]
+    val = [float(x) for x in range(0)]
     dx, dy = spacings
     Nx, Ny = Ngrid
     for ik in range(Nx*Ny):
