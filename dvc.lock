@@ -240,8 +240,8 @@ stages:
     deps:
     - path: configs/decomposition/wildfire1d.yaml
       hash: md5
-      md5: 15c1ad8a4ccc6a0171f21c7aa7a83f5a
-      size: 318
+      md5: b2ccaa38da996ba964e04a7336cee250
+      size: 525
     - path: data/wildfire1d.zarr
       hash: md5
       md5: 3fa0f8b80ab9c9e46ab989a5fb0ec7fc.dir
@@ -287,8 +287,8 @@ stages:
     outs:
     - path: data/decomposition/wildfire1d.zarr
       hash: md5
-      md5: 4fed2580891d6ed8fc4ccaa62d207995.dir
-      size: 2625237
+      md5: 4ee9c8c7c68724424e1abb72ff703cbb.dir
+      size: 3865816
       nfiles: 61
   decompose@wildfire2d:
     cmd: spodnn decompose configs/decomposition/wildfire2d.yaml
