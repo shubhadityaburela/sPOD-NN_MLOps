@@ -8,6 +8,8 @@ from spod.transforms import compute_general_shift_matrix_numba, meshgrid2D, tran
 
 from spodnn.wildfire.shifts import expand_shifts
 
+pytestmark = pytest.mark.slow  # numba compiles the general 2D shift on first use (~7 s)
+
 NX, NY, NT = 12, 12, 4  # square: sPOD's meshgrid2D, used by the general shifts, assumes Nx == Ny
 
 

@@ -61,7 +61,8 @@ explicit = true
 members = ["sPOD"]
 
 [tool.pytest.ini_options]
-markers = ["slow: takes minutes (runs sPOD); skip with -m 'not slow'"]
+markers = ["slow: takes long (runs sPOD or compiles numba); skipped by default, run with -m slow or -m ''"]
+addopts = ["-m", "not slow"]  # a -m on the command line overrides this; CI runs everything
 
 
 [tool.ruff]
